@@ -3,6 +3,7 @@
 A Flask web app that estimates BMI from a full-body image using MediaPipe pose landmarks, silhouette-derived body features, and a Random Forest regression model.
 
 This repository is prepared for public upload without personal photos, names, IDs, or local runtime history.
+Live Demo :https://bmi-calculator-corp.onrender.com/
 
 ## Features
 
