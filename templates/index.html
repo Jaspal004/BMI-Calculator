@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI BMI System</title>
+
+<style>
+:root {
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --surface-muted: #f0f4f8;
+    --ink: #172033;
+    --muted: #64748b;
+    --line: #d9e2ec;
+    --accent: #0f8b8d;
+    --accent-strong: #116466;
+    --accent-soft: #d9f3f0;
+    --blue: #2563eb;
+    --green: #218c5f;
+    --amber: #b7791f;
+    --red: #c2413d;
+    --shadow: 0 20px 55px rgba(23, 32, 51, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: var(--ink);
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+        linear-gradient(135deg, #eef5f3 0%, #f7f4ee 45%, #eef1f7 100%);
+}
+
+button,
+input,
+a {
+    font: inherit;
+}
+
+.app-shell {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 40px;
+}
+
+.app-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 10px;
+    border: 1px solid rgba(15, 139, 141, 0.28);
+    border-radius: 999px;
+    color: var(--accent-strong);
+    background: rgba(217, 243, 240, 0.72);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+
+h1 {
+    margin-top: 12px;
+    font-size: 34px;
+    line-height: 1.08;
+    letter-spacing: 0;
+}
+
+.header-copy {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 620px;
+}
+
+.status-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.72);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.panel {
+    border: 1px solid rgba(217, 226, 236, 0.92);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow);
+}
+
+.panel-inner {
+    padding: 22px;
+}
+
+.panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.panel-heading h2,
+.panel-heading h3 {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.panel-heading span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.upload-panel {
+    grid-row: span 2;
+}
+
+.file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.dropzone {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    min-height: 112px;
+    padding: 18px;
+    border: 1px dashed #9ab5c9;
+    border-radius: 8px;
+    color: var(--ink);
+    background: linear-gradient(180deg, #ffffff, #f3f8fb);
+    cursor: pointer;
+    transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.dropzone:hover {
+    border-color: var(--accent);
+    background: #f4fbfa;
+    transform: translateY(-1px);
+}
+
+.dropzone-mark {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.dropzone strong {
+    display: block;
+    margin-bottom: 4px;
+    overflow-wrap: anywhere;
+    font-size: 16px;
+}
+
+.dropzone span {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.preview-frame {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-muted);
+}
+
+.preview-frame img {
+    width: 100%;
+    height: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+    background: #ffffff;
+}
+
+.preview-frame.is-empty img {
+    display: none;
+}
+
+.preview-label {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    z-index: 1;
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.86);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.preview-placeholder {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.camera-panel {
+    margin-top: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfcfe;
+    overflow: hidden;
+}
+
+.camera-stage {
+    aspect-ratio: 16 / 9;
+    background: #111827;
+}
+
+.camera-stage video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.camera-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+}
+
+.camera-status {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--accent);
+    text-decoration: none;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.btn:hover {
+    background: var(--accent-strong);
+    transform: translateY(-1px);
+}
+
+.btn.secondary {
+    color: var(--ink);
+    border-color: var(--line);
+    background: #ffffff;
+}
+
+.btn.secondary:hover {
+    border-color: #9ab5c9;
+    background: #f4f8fb;
+}
+
+.btn.danger {
+    background: var(--red);
+}
+
+.btn.danger:hover {
+    background: #9f2f2c;
+}
+
+.result-panel {
+    min-height: 360px;
+}
+
+.alert {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid #f1b7b5;
+    border-radius: 8px;
+    color: #8a1f1c;
+    background: #fff1f0;
+    font-weight: 700;
+}
+
+.result-empty {
+    display: grid;
+    place-items: center;
+    min-height: 260px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.metric-placeholder {
+    display: grid;
+    place-items: center;
+    width: 104px;
+    height: 104px;
+    margin-bottom: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: #8a9bb0;
+    background: var(--surface-muted);
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.result-banner {
+    padding: 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #f8fafc;
+}
+
+.result-banner.underweight {
+    border-color: rgba(37, 99, 235, 0.25);
+    background: #eff6ff;
+}
+
+.result-banner.normal {
+    border-color: rgba(33, 140, 95, 0.25);
+    background: #edf8f2;
+}
+
+.result-banner.overweight {
+    border-color: rgba(183, 121, 31, 0.28);
+    background: #fff8e8;
+}
+
+.result-banner.obese {
+    border-color: rgba(194, 65, 61, 0.25);
+    background: #fff1f0;
+}
+
+.result-topline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.result-number {
+    font-size: 54px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.category-pill {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: #ffffff;
+    background: var(--accent);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.underweight .category-pill {
+    background: var(--blue);
+}
+
+.normal .category-pill {
+    background: var(--green);
+}
+
+.overweight .category-pill {
+    background: var(--amber);
+}
+
+.obese .category-pill {
+    background: var(--red);
+}
+
+.result-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.meta-box {
+    padding: 12px;
+    border: 1px solid rgba(217, 226, 236, 0.72);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.62);
+}
+
+.meta-box span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.meta-box strong {
+    overflow-wrap: anywhere;
+    font-size: 16px;
+}
+
+.meter {
+    height: 12px;
+    margin-top: 18px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.11);
+}
+
+.meter-fill {
+    height: 100%;
+    max-width: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+}
+
+.underweight .meter-fill {
+    background: var(--blue);
+}
+
+.normal .meter-fill {
+    background: var(--green);
+}
+
+.overweight .meter-fill {
+    background: var(--amber);
+}
+
+.obese .meter-fill {
+    background: var(--red);
+}
+
+.history-panel,
+.chart-panel {
+    grid-column: span 1;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th,
+td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+}
+
+th {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+tr:last-child td {
+    border-bottom: 0;
+}
+
+.empty-state {
+    min-height: 92px;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: #fbfcfe;
+    font-weight: 700;
+    text-align: center;
+}
+
+.history-actions {
+    margin-top: 14px;
+}
+
+.chart-wrap {
+    height: 258px;
+}
+
+.chart-wrap canvas {
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 900px) {
+    .app-header,
+    .result-topline {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .upload-panel,
+    .history-panel,
+    .chart-panel {
+        grid-column: span 1;
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 620px) {
+    .app-shell {
+        width: min(100% - 20px, 1120px);
+        padding-top: 18px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    .panel-inner {
+        padding: 16px;
+    }
+
+    .dropzone,
+    .preview-grid,
+    .result-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .dropzone-mark {
+        width: 42px;
+        height: 42px;
+    }
+
+    .actions,
+    .camera-controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="app-shell">
+    <header class="app-header">
+        <div>
+            <span class="eyebrow">Computer vision health analytics</span>
+            <h1>AI-Based BMI Estimation</h1>
+            <p class="header-copy">Upload or capture a full-body image, review the prediction, and track BMI history in one clean demo view.</p>
+        </div>
+        <span class="status-chip">Flask + MediaPipe + ML</span>
+    </header>
+
+    <main class="dashboard-grid">
+        <section class="panel upload-panel">
+            <div class="panel-inner">
+                <div class="panel-heading">
+                    <h2>Image Input</h2>
+                    <span>PNG / JPG / JPEG</span>
+                </div>
+
+                <form id="predictionForm" method="POST" enctype="multipart/form-data">
+                    <label class="dropzone" for="imageInput">
+                        <span class="dropzone-mark">+</span>
+                        <span>
+                            <strong id="fileName">Choose image</strong>
+                            <span>Full-body photo or browser camera capture</span>
+                        </span>
+                    </label>
+                    <input id="imageInput" class="file-input" type="file" name="image" accept=".png,.jpg,.jpeg,image/png,image/jpeg" required>
+
+                    <div class="preview-grid">
+                        <div id="previewWrap" class="preview-frame is-empty">
+                            <span class="preview-label">Selected</span>
+                            <img id="preview" src="" alt="Selected image preview">
+                            <span id="previewPlaceholder" class="preview-placeholder">Preview</span>
+                        </div>
+
+                        {% if image_path %}
+                        <div class="preview-frame">
+                            <span class="preview-label">Analyzed</span>
+                            <img src="{{ image_path }}" alt="Analyzed uploaded image">
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div id="cameraPanel" class="camera-panel" hidden>
+                        <div class="camera-stage">
+                            <video id="cameraVideo" autoplay playsinline muted></video>
+                        </div>
+                        <div class="camera-controls">
+                            <span id="cameraStatus" class="camera-status"></span>
+                            <div class="actions" style="margin-top: 0;">
+                                <button class="btn secondary" type="button" id="captureButton">Capture</button>
+                                <button class="btn secondary" type="button" id="closeCameraButton">Close</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn" type="submit">Predict BMI</button>
+                        <button class="btn secondary" type="button" id="openCameraButton">Use Camera</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel result-panel">
+            <div class="panel-inner">
+                <div class="panel-heading">
+                    <h2>Prediction</h2>
+                    <span>Current result</span>
+                </div>
+
+                {% if error %}
+                <div class="alert">{{ error }}</div>
+                {% endif %}
+
+                {% if bmi %}
+                {% set width = ((bmi / 40) * 100) | int %}
+                <div class="result-banner {{ category | lower }}">
+                    <div class="result-topline">
+                        <div>
+                            <div class="result-number">{{ "%.2f"|format(bmi) }}</div>
+                            <p>BMI score</p>
+                        </div>
+                        <span class="category-pill">{{ category }}</span>
+                    </div>
+
+                    <div class="result-meta">
+                        <div class="meta-box">
+                            <span>Reliability</span>
+                            <strong>{{ reliability }}</strong>
+                        </div>
+                        <div class="meta-box">
+                            <span>Range</span>
+                            <strong>15 - 40</strong>
+                        </div>
+                    </div>
+
+                    <div class="meter" aria-label="BMI scale">
+                        <div class="meter-fill" style="width: {{ width if width < 100 else 100 }}%;"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="result-empty">
+                    <div>
+                        <span class="metric-placeholder">--</span>
+                        <h3>Ready for prediction</h3>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="panel history-panel">
+            <div class="panel-inner">
+                <div class="panel-heading">
+                    <h3>BMI History</h3>
+                    <span>Latest first</span>
+                </div>
+
+                {% if history %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>BMI</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in history %}
+                            <tr>
+                                <td>{{ row.bmi }}</td>
+                                <td>{{ row.category }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="history-actions">
+                    <a class="btn danger" href="/clear">Clear History</a>
+                </div>
+                {% else %}
+                <div class="empty-state">No history yet</div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="panel chart-panel">
+            <div class="panel-inner">
+                <div class="panel-heading">
+                    <h3>BMI Trend</h3>
+                    <span>Session data</span>
+                </div>
+
+                {% if chart_values %}
+                <div class="chart-wrap">
+                    <canvas id="bmiChart"></canvas>
+                </div>
+                {% else %}
+                <div class="empty-state">Trend appears after the first prediction</div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+const imageInput = document.getElementById("imageInput");
+const fileName = document.getElementById("fileName");
+const preview = document.getElementById("preview");
+const previewWrap = document.getElementById("previewWrap");
+const cameraPanel = document.getElementById("cameraPanel");
+const cameraVideo = document.getElementById("cameraVideo");
+const cameraStatus = document.getElementById("cameraStatus");
+const openCameraButton = document.getElementById("openCameraButton");
+const closeCameraButton = document.getElementById("closeCameraButton");
+const captureButton = document.getElementById("captureButton");
+let cameraStream = null;
+
+function setPreview(src, label) {
+    preview.src = src;
+    previewWrap.classList.remove("is-empty");
+    fileName.textContent = label;
+}
+
+function previewImage(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function() {
+        setPreview(reader.result, file.name);
+    };
+    reader.readAsDataURL(file);
+}
+
+async function openCamera() {
+    cameraPanel.hidden = false;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        cameraStatus.textContent = "Camera is not available in this browser.";
+        return;
+    }
+
+    cameraStatus.textContent = "Starting camera...";
+
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false
+        });
+        cameraVideo.srcObject = cameraStream;
+        cameraStatus.textContent = "Camera ready";
+    } catch (error) {
+        cameraStatus.textContent = "Camera permission denied or unavailable.";
+    }
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(function(track) {
+            track.stop();
+        });
+    }
+
+    cameraStream = null;
+    cameraVideo.srcObject = null;
+    cameraPanel.hidden = true;
+    cameraStatus.textContent = "";
+}
+
+function captureCamera() {
+    if (!cameraStream) {
+        cameraStatus.textContent = "Start the camera before capturing.";
+        return;
+    }
+
+    if (typeof DataTransfer === "undefined") {
+        cameraStatus.textContent = "This browser cannot attach camera captures automatically.";
+        return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = cameraVideo.videoWidth || 960;
+    canvas.height = cameraVideo.videoHeight || 720;
+
+    const context = canvas.getContext("2d");
+    context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(function(blob) {
+        if (!blob) {
+            cameraStatus.textContent = "Could not capture this frame.";
+            return;
+        }
+
+        const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        imageInput.files = transfer.files;
+
+        setPreview(canvas.toDataURL("image/jpeg", 0.92), "Camera capture ready");
+        stopCamera();
+    }, "image/jpeg", 0.92);
+}
+
+imageInput.addEventListener("change", previewImage);
+openCameraButton.addEventListener("click", openCamera);
+closeCameraButton.addEventListener("click", stopCamera);
+captureButton.addEventListener("click", captureCamera);
+
+const labels = {{ chart_labels | default([]) | tojson }};
+const values = {{ chart_values | default([]) | tojson }};
+const chartElement = document.getElementById("bmiChart");
+
+if (chartElement && window.Chart && values.length) {
+    new Chart(chartElement, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "BMI",
+                data: values,
+                borderColor: "#0f8b8d",
+                backgroundColor: "rgba(15, 139, 141, 0.14)",
+                borderWidth: 3,
+                pointRadius: 4,
+                pointBackgroundColor: "#116466",
+                fill: true,
+                tension: 0.36
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    suggestedMin: 15,
+                    suggestedMax: 40,
+                    grid: { color: "rgba(100, 116, 139, 0.18)" }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>

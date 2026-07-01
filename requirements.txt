@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn==1.7.2
+matplotlib
+flask
+werkzeug
+opencv-python
+mediapipe
+gunicorn

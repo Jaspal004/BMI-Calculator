@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.log
+
+# Runtime data
+history.csv
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Generated documents and local reports
+*.pdf
+*.docx
+*.pptx
+
+# Generated browser profile from poster export
+.edge-poster-profile/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
