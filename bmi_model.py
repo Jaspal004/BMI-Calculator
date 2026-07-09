@@ -1,6 +1,36 @@
 import pickle
+import sys
 import pandas as pd
 
+# Compatibility shim for pickled scikit-learn and numpy objects saved with newer module paths.
+# Older sklearn versions used sklearn.ensemble.forest and sklearn.tree.tree.
+# Newer sklearn versions may reference sklearn.ensemble._forest, sklearn.tree._classes, or numpy._core.
+try:
+    import sklearn.ensemble._forest  # noqa: F401
+except ModuleNotFoundError:
+    try:
+        import sklearn.ensemble.forest as _old_forest
+        sys.modules["sklearn.ensemble._forest"] = _old_forest
+    except ImportError:
+        pass
+
+try:
+    import sklearn.tree._classes  # noqa: F401
+except ModuleNotFoundError:
+    try:
+        import sklearn.tree.tree as _old_tree
+        sys.modules["sklearn.tree._classes"] = _old_tree
+    except ImportError:
+        pass
+
+try:
+    import numpy._core  # noqa: F401
+except ModuleNotFoundError:
+    try:
+        import numpy.core as _old_numpy_core
+        sys.modules["numpy._core"] = _old_numpy_core
+    except ImportError:
+        pass
 
 # ===== FEATURE NAMES (MUST MATCH TRAINING) =====
 FEATURE_NAMES = [
