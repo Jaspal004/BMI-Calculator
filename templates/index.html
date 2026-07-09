@@ -23,6 +23,88 @@
     --shadow: 0 20px 55px rgba(23, 32, 51, 0.12);
 }
 
+body.dark-mode {
+    background: #08101d;
+    color: #dbeafe;
+}
+
+body.dark-mode .app-header,
+body.dark-mode .panel {
+    background: rgba(12, 22, 40, 0.94);
+    border-color: rgba(71, 85, 105, 0.42);
+}
+
+body.dark-mode .dropzone {
+    background: linear-gradient(180deg, #0d1725, #102036);
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+body.dark-mode .preview-frame,
+body.dark-mode .camera-panel,
+body.dark-mode .result-empty,
+body.dark-mode .empty-state,
+body.dark-mode .table-wrap,
+body.dark-mode .chart-wrap {
+    background: #0b1525;
+}
+
+body.dark-mode .preview-frame {
+    border-color: #475569;
+}
+
+body.dark-mode .status-chip {
+    background: rgba(148, 163, 184, 0.16);
+    border-color: rgba(148, 163, 184, 0.24);
+    color: #cbd5e1;
+}
+
+body.dark-mode .btn {
+    background: #0f8b8d;
+    color: #ffffff;
+}
+
+body.dark-mode .btn.secondary {
+    color: #e2e8f0;
+    background: #1f2937;
+    border-color: #475569;
+}
+
+body.dark-mode .btn.danger {
+    background: #991b1b;
+}
+
+body.dark-mode .alert {
+    border-color: #7f1d1d;
+    background: #4b121c;
+    color: #ffe4e6;
+}
+
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+    background: transparent;
+    color: #cbd5e1;
+    border-color: #334155;
+}
+
+body.dark-mode .meter {
+    background: rgba(148, 163, 184, 0.15);
+}
+
+body.dark-mode .meter-fill {
+    box-shadow: none;
+}
+
+body.dark-mode a {
+    color: #93c5fd;
+}
+
+body.dark-mode .footer {
+    background: transparent;
+    color: #cbd5e1;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -617,7 +699,10 @@ tr:last-child td {
             <h1>AI-Based BMI Estimation</h1>
             <p class="header-copy">Upload or capture a full-body image, review the prediction, and track BMI history in one clean demo view.</p>
         </div>
-        <span class="status-chip">Flask + MediaPipe + ML</span>
+        <div class="status-actions">
+            <span class="status-chip">Flask + MediaPipe + ML</span>
+            <button class="btn secondary theme-toggle" type="button" id="themeToggle">Dark mode</button>
+        </div>
     </header>
 
     <main class="dashboard-grid">
@@ -774,6 +859,10 @@ tr:last-child td {
             </div>
         </section>
     </main>
+
+    <footer class="footer">
+        <p>Made with love by Jaspreet</p>
+    </footer>
 </div>
 
 <script>
@@ -882,9 +971,23 @@ openCameraButton.addEventListener("click", openCamera);
 closeCameraButton.addEventListener("click", stopCamera);
 captureButton.addEventListener("click", captureCamera);
 
+const themeToggle = document.getElementById("themeToggle");
 const labels = {{ chart_labels | default([]) | tojson }};
 const values = {{ chart_values | default([]) | tojson }};
 const chartElement = document.getElementById("bmiChart");
+
+function applyTheme(theme) {
+    document.body.classList.toggle("dark-mode", theme === "dark");
+    themeToggle.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+    localStorage.setItem("theme", theme);
+}
+
+const savedTheme = localStorage.getItem("theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+applyTheme(savedTheme);
+
+themeToggle.addEventListener("click", function() {
+    applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
+});
 
 if (chartElement && window.Chart && values.length) {
     new Chart(chartElement, {
